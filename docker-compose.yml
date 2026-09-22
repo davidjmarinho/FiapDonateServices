@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fiapdonate-services
-    env_file:
-      - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
@@ -17,9 +15,10 @@ services:
       WorkerApi__BaseUrl: http://fiapdonate-worker:8080
       RabbitMQ__Host: rabbitmq
       RabbitMQ__Port: 5672
-      RabbitMQ__User: guest
-      RabbitMQ__Password: guest
       RabbitMQ__VirtualHost: /
+    secrets:
+      - rabbitmq_user
+      - rabbitmq_password
     ports:
       - "8090:8080"
     depends_on:
@@ -34,9 +33,16 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+    secrets:
+      - rabbitmq_user
+      - rabbitmq_password
+    command:
+      - /bin/sh
+      - -c
+      - |
+        export RABBITMQ_DEFAULT_USER="$(cat /run/secrets/rabbitmq_user)"
+        export RABBITMQ_DEFAULT_PASS="$(cat /run/secrets/rabbitmq_password)"
+        exec docker-entrypoint.sh rabbitmq-server
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -64,15 +70,29 @@ services:
     container_name: fiapdonate-grafana
     ports:
       - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+    secrets:
+      - grafana_admin_password
+    command:
+      - /bin/sh
+      - -c
+      - |
+        export GF_SECURITY_ADMIN_USER="admin"
+        export GF_SECURITY_ADMIN_PASSWORD="$(cat /run/secrets/grafana_admin_password)"
+        exec /run.sh
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - prometheus
     networks:
       - fiapdonate-network
+
+secrets:
+  rabbitmq_user:
+    file: ./secrets/rabbitmq_user.txt
+  rabbitmq_password:
+    file: ./secrets/rabbitmq_password.txt
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password.txt
 
 networks:
   fiapdonate-network:

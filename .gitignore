@@ -34,6 +34,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+secrets/*.txt
+!secrets/.gitkeep
+!secrets/README.md
 
 # Docker / local runtime
 .docker/
