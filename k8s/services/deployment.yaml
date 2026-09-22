@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fiapdonate-services
+  namespace: fiapdonate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fiapdonate-services
+  template:
+    metadata:
+      labels:
+        app: fiapdonate-services
+    spec:
+      containers:
+        - name: fiapdonate-services
+          image: fiapdonateservices:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fiapdonate-services-config
+            - secretRef:
+                name: fiapdonate-secrets
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fiapdonate-services
+  namespace: fiapdonate
+spec:
+  selector:
+    app: fiapdonate-services
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

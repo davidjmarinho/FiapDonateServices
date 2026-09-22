@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'fiapdonate-services'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['fiapdonate-services:8080']
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15672']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fiapdonate-services-config
+  namespace: fiapdonate
+data:
+  ASPNETCORE_ENVIRONMENT: Development
+  CampaignApi__BaseUrl: http://fiapdonate-campaign:8080
+  UsersApi__BaseUrl: http://fiapdonate-users:8080
+  ReceiverApi__BaseUrl: http://fiapdonate-receiver:8080
+  WorkerApi__BaseUrl: http://fiapdonate-worker:8080
+  RabbitMQ__Host: rabbitmq
+  RabbitMQ__Port: "5672"
+  RabbitMQ__VirtualHost: "/"
+  JWT_ISSUER: fiapdonate
+  JWT_AUDIENCE: fiapdonate-clients

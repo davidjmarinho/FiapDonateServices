@@ -1,0 +1,79 @@
+name: fiapdonate
+
+services:
+  fiapdonate-services:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fiapdonate-services
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      CampaignApi__BaseUrl: http://fiapdonate-campaign:8080
+      UsersApi__BaseUrl: http://fiapdonate-users:8080
+      ReceiverApi__BaseUrl: http://fiapdonate-receiver:8080
+      WorkerApi__BaseUrl: http://fiapdonate-worker:8080
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__User: guest
+      RabbitMQ__Password: guest
+      RabbitMQ__VirtualHost: /
+    ports:
+      - "8090:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fiapdonate-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: fiapdonate-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - fiapdonate-network
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: fiapdonate-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    networks:
+      - fiapdonate-network
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: fiapdonate-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - fiapdonate-network
+
+networks:
+  fiapdonate-network:
+    driver: bridge

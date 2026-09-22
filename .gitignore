@@ -1,0 +1,64 @@
+# .NET / build
+bin/
+obj/
+out/
+artifacts/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.pdb
+*.cache
+*.log
+*.trx
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.db
+*.sqlite
+*.sqlite3
+
+# VS / IDE
+.vs/
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Docker / local runtime
+.docker/
+*.tar
+compose.override.yml
+
+# Kubernetes local state
+kubeconfig
+*.kubeconfig
+
+# Grafana / Prometheus local data
+grafana/data/
+prometheus/data/
+*.db-wal
+*.db-shm
+
+# Node / package manager (cautela)
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Test results
+TestResults/
+coverage/
+
+# GitHub / tooling
+*.orig
+*.rej
