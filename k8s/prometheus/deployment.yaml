@@ -61,6 +61,14 @@ data:
         metrics_path: /metrics
         static_configs:
           - targets: ['fiapdonate-services:8080']
+      - job_name: 'fiapdonate-worker'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['fiapdonate-worker:8080']
+      - job_name: 'fiapdonate-receiver'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['fiapdonate-receiver:8080']
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']

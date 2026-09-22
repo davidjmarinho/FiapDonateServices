@@ -24,6 +24,53 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - fiapdonate-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fiapdonate-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+    secrets:
+      - sqlserver_sa_password
+    command:
+      - /bin/bash
+      - -c
+      - |
+        export MSSQL_SA_PASSWORD="$(cat /run/secrets/sqlserver_sa_password)"
+        exec /opt/mssql/bin/sqlservr
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$(cat /run/secrets/sqlserver_sa_password)\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - fiapdonate-network
+
+  postgres:
+    image: postgres:16
+    container_name: fiapdonate-postgres
+    environment:
+      POSTGRES_DB: conexao_solidaria
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d conexao_solidaria"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks:
       - fiapdonate-network
 
@@ -48,6 +95,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - fiapdonate-network
+
+  rabbitmq-init:
+    image: curlimages/curl:8.10.1
+    container_name: fiapdonate-rabbitmq-init
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    secrets:
+      - rabbitmq_user
+      - rabbitmq_password
+    volumes:
+      - ./rabbitmq/init.sh:/init.sh:ro
+    command: ["/bin/sh", "/init.sh"]
+    restart: "no"
     networks:
       - fiapdonate-network
 
@@ -91,8 +154,16 @@ secrets:
     file: ./secrets/rabbitmq_user.txt
   rabbitmq_password:
     file: ./secrets/rabbitmq_password.txt
+  sqlserver_sa_password:
+    file: ./secrets/sqlserver_sa_password.txt
+  postgres_password:
+    file: ./secrets/postgres_password.txt
   grafana_admin_password:
     file: ./secrets/grafana_admin_password.txt
+
+volumes:
+  sqlserver-data:
+  postgres-data:
 
 networks:
   fiapdonate-network:

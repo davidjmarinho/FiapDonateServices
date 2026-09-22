@@ -22,14 +22,25 @@ spec:
           env:
             - name: RABBITMQ_DEFAULT_USER
               valueFrom:
-                secretKeyRef:
-                  name: fiapdonate-secrets
+                configMapKeyRef:
+                  name: fiapdonate-services-config
                   key: RabbitMQ__User
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
                   name: fiapdonate-secrets
                   key: RabbitMQ__Password
+          volumeMounts:
+            - name: rabbitmq-definitions
+              mountPath: /etc/rabbitmq/definitions.json
+              subPath: definitions.json
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - until rabbitmq-diagnostics -q ping; do sleep 1; done; rabbitmqctl import_definitions /etc/rabbitmq/definitions.json
           readinessProbe:
             exec:
               - command: ["rabbitmq-diagnostics", "-q", "ping"]
@@ -40,6 +51,10 @@ spec:
               - command: ["rabbitmq-diagnostics", "-q", "ping"]
             initialDelaySeconds: 20
             periodSeconds: 15
+      volumes:
+        - name: rabbitmq-definitions
+          configMap:
+            name: rabbitmq-definitions
 ---
 apiVersion: v1
 kind: Service
@@ -57,3 +72,17 @@ spec:
       port: 15672
       targetPort: 15672
   type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-definitions
+  namespace: fiapdonate
+data:
+  definitions.json: |
+    {
+      "vhosts": [{"name": "/"}],
+      "queues": [{"name": "doacao-recebida-queue", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {}}],
+      "exchanges": [{"name": "FiapDonateWorker.Api.Events:DoacaoRecebidaEvent", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false, "internal": false, "arguments": {}}],
+      "bindings": [{"source": "FiapDonateWorker.Api.Events:DoacaoRecebidaEvent", "vhost": "/", "destination": "doacao-recebida-queue", "destination_type": "queue", "routing_key": "", "arguments": {}}]
+    }

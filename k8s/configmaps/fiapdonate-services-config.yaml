@@ -12,5 +12,9 @@ data:
   RabbitMQ__Host: rabbitmq
   RabbitMQ__Port: "5672"
   RabbitMQ__VirtualHost: "/"
+  RabbitMQ__User: fiapdonate
+  RabbitMq__Host: rabbitmq
+  RabbitMq__VirtualHost: "/"
+  RabbitMq__Username: fiapdonate
   JWT_ISSUER: fiapdonate
   JWT_AUDIENCE: fiapdonate-clients

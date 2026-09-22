@@ -1,0 +1,54 @@
+services:
+  fiapdonate-worker:
+    profiles: ["integrations"]
+    build:
+      context: ../FiapDonateWorker
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      RabbitMq__Host: rabbitmq
+      RabbitMq__VirtualHost: /
+      RabbitMq__Username: fiapdonate
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export RabbitMq__Password="$(cat /run/secrets/rabbitmq_password)"
+        export ConnectionStrings__WorkerDb="Server=sqlserver,1433;Database=conexao_solidaria;User Id=sa;Password=$(cat /run/secrets/sqlserver_sa_password);TrustServerCertificate=True;"
+        exec dotnet FiapDonateWorker.Api.dll
+    secrets:
+      - rabbitmq_password
+      - sqlserver_sa_password
+    depends_on:
+      rabbitmq-init:
+        condition: service_completed_successfully
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - fiapdonate-network
+
+  fiapdonate-receiver:
+    profiles: ["integrations"]
+    build:
+      context: ../FiapDonateReceiver
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      RabbitMq__Host: rabbitmq
+      RabbitMq__VirtualHost: /
+      RabbitMq__Username: fiapdonate
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export RabbitMq__Password="$(cat /run/secrets/rabbitmq_password)"
+        export ConnectionStrings__ReceiverDb="Host=postgres;Port=5432;Database=conexao_solidaria;Username=postgres;Password=$(cat /run/secrets/postgres_password)"
+        exec dotnet FiapDonateReceiver.Worker.dll
+    secrets:
+      - rabbitmq_password
+      - postgres_password
+    depends_on:
+      rabbitmq-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    networks:
+      - fiapdonate-network
