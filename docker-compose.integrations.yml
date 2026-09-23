@@ -1,4 +1,29 @@
 services:
+  fiapdonatecampaign:
+    profiles: ["integrations"]
+    build:
+      context: ../FiapDonateCampaign
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: FiapDonateCampaign
+      Jwt__Audience: FiapDonateCampaignUsers
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export ConnectionStrings__DefaultConnection="Server=sqlserver,1433;Database=FiapDonateDb;User Id=sa;Password=$(cat /run/secrets/sqlserver_sa_password);TrustServerCertificate=True;"
+        export Jwt__Key="$(cat /run/secrets/campaign_jwt_key)"
+        exec dotnet FiapDonateCampaign.API.dll
+    secrets:
+      - sqlserver_sa_password
+      - campaign_jwt_key
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - fiapdonate-network
+
   fiapdonate-worker:
     profiles: ["integrations"]
     build:

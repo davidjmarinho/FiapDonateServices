@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fiapdonatecampaign-config
+  namespace: fiapdonate
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  ASPNETCORE_URLS: http://+:8080
+  Jwt__Issuer: FiapDonateCampaign
+  Jwt__Audience: FiapDonateCampaignUsers
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fiapdonatecampaign
+  namespace: fiapdonate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fiapdonatecampaign
+  template:
+    metadata:
+      labels:
+        app: fiapdonatecampaign
+    spec:
+      containers:
+        - name: campaign
+          image: fiapdonatecampaign:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fiapdonatecampaign-config
+            - secretRef:
+                name: fiapdonatecampaign-secrets
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fiapdonatecampaign
+  namespace: fiapdonate
+spec:
+  selector:
+    app: fiapdonatecampaign
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

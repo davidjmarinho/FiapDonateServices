@@ -9,7 +9,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      CampaignApi__BaseUrl: http://fiapdonate-campaign:8080
+      CampaignApi__BaseUrl: http://fiapdonatecampaign:8080
       UsersApi__BaseUrl: http://fiapdonate-users:8080
       ReceiverApi__BaseUrl: http://fiapdonate-receiver:8080
       WorkerApi__BaseUrl: http://fiapdonate-worker:8080
@@ -160,6 +160,8 @@ secrets:
     file: ./secrets/postgres_password.txt
   grafana_admin_password:
     file: ./secrets/grafana_admin_password.txt
+  campaign_jwt_key:
+    file: ./secrets/campaign_jwt_key.txt
 
 volumes:
   sqlserver-data:

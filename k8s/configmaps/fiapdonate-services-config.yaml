@@ -5,7 +5,7 @@ metadata:
   namespace: fiapdonate
 data:
   ASPNETCORE_ENVIRONMENT: Development
-  CampaignApi__BaseUrl: http://fiapdonate-campaign:8080
+  CampaignApi__BaseUrl: http://fiapdonatecampaign:8080
   UsersApi__BaseUrl: http://fiapdonate-users:8080
   ReceiverApi__BaseUrl: http://fiapdonate-receiver:8080
   WorkerApi__BaseUrl: http://fiapdonate-worker:8080

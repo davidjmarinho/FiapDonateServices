@@ -41,6 +41,31 @@ O workspace atual contém apenas este repositório e a documentação do plano d
 docker compose up --build
 ```
 
+Esse comando sobe a infraestrutura compartilhada: RabbitMQ, SQL Server,
+PostgreSQL, Prometheus, Grafana e a API de infraestrutura. As senhas locais são
+lidas exclusivamente dos arquivos em `secrets/`, que não são versionados.
+
+### Campaign, Worker e Receiver
+
+Quando os repositórios `FiapDonateCampaign`, `FiapDonateWorker` e
+`FiapDonateReceiver` estiverem como pastas irmãs deste repositório, inicie os
+serviços reais com:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.integrations.yml --profile integrations up --build
+```
+
+O overlay espera as imagens geradas pelos Dockerfiles dos repositórios irmãos e
+injeta connection strings, chaves JWT e senhas RabbitMQ a partir dos Docker
+Secrets. Ele não expõe essas credenciais no Compose.
+
+O RabbitMQ provisiona a fila durável `doacao-recebida-queue` e o binding do
+evento MassTransit `FiapDonateWorker.Api.Events:DoacaoRecebidaEvent`. A
+especificação do contrato e a pendência sobre os bancos estão em
+[docs/worker-receiver-integration.md](docs/worker-receiver-integration.md).
+Os requisitos específicos do Campaign estão em
+[docs/campaign-integration.md](docs/campaign-integration.md).
+
 Acesse:
 
 - API: http://localhost:8090
