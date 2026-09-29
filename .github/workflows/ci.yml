@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-deploy-k8s:
     runs-on: ubuntu-latest
@@ -13,6 +17,14 @@ jobs:
     env:
       NAMESPACE: fiapdonate
       CLUSTER_NAME: fiapdonate-ci
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+      RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+      GRAFANA_ADMIN_USER: ${{ secrets.GRAFANA_ADMIN_USER }}
+      GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+      SQLSERVER_CONNECTION_STRING: ${{ secrets.SQLSERVER_CONNECTION_STRING }}
+      POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+      CAMPAIGN_JWT_KEY: ${{ secrets.CAMPAIGN_JWT_KEY }}
 
     steps:
       - name: Checkout FiapDonateServices
@@ -106,6 +118,45 @@ jobs:
               echo "Skipping image ${image}: not built or not available."
             fi
           done
+
+      - name: Create Kubernetes secrets from GitHub secrets
+        run: |
+          set -euo pipefail
+          : "${JWT_KEY:?JWT_KEY secret is required}"
+          : "${RABBITMQ_USER:?RABBITMQ_USER secret is required}"
+          : "${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD secret is required}"
+          : "${GRAFANA_ADMIN_USER:?GRAFANA_ADMIN_USER secret is required}"
+          : "${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD secret is required}"
+          : "${SQLSERVER_CONNECTION_STRING:?SQLSERVER_CONNECTION_STRING secret is required}"
+          : "${POSTGRES_CONNECTION_STRING:?POSTGRES_CONNECTION_STRING secret is required}"
+          : "${CAMPAIGN_JWT_KEY:?CAMPAIGN_JWT_KEY secret is required}"
+
+          kubectl create secret generic fiapdonate-secrets -n "$NAMESPACE" \
+            --from-literal=JWT_KEY="$JWT_KEY" \
+            --from-literal=RabbitMQ__Password="$RABBITMQ_PASSWORD" \
+            --from-literal=RabbitMQ__User="$RABBITMQ_USER" \
+            --from-literal=GRAFANA_ADMIN_USER="$GRAFANA_ADMIN_USER" \
+            --from-literal=GRAFANA_ADMIN_PASSWORD="$GRAFANA_ADMIN_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fiapdonate-users-secrets -n "$NAMESPACE" \
+            --from-literal=ConnectionStrings__DefaultConnection="$SQLSERVER_CONNECTION_STRING" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fiapdonatecampaign-secrets -n "$NAMESPACE" \
+            --from-literal=ConnectionStrings__DefaultConnection="$SQLSERVER_CONNECTION_STRING" \
+            --from-literal=Jwt__Key="$CAMPAIGN_JWT_KEY" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fiapdonate-worker-secrets -n "$NAMESPACE" \
+            --from-literal=RabbitMq__Password="$RABBITMQ_PASSWORD" \
+            --from-literal=ConnectionStrings__WorkerDb="$SQLSERVER_CONNECTION_STRING" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic fiapdonate-receiver-secrets -n "$NAMESPACE" \
+            --from-literal=RabbitMq__Password="$RABBITMQ_PASSWORD" \
+            --from-literal=ConnectionStrings__ReceiverDb="$POSTGRES_CONNECTION_STRING" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy Kubernetes manifests
         run: |
