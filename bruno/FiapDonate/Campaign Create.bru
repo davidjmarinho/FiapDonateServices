@@ -1,0 +1,28 @@
+meta {
+  name: Campaign Create
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrlCampaign}}/api/campaigns
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Campanha de Teste",
+    "description": "Validação de fluxo end-to-end",
+    "goal": 1000.00,
+    "initialValue": 0.00
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Users Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrlUsers}}/api/users/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "usuario@fiapdonate.com",
+    "password": "Senha@123"
+  }
+}

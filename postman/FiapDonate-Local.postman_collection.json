@@ -1,0 +1,294 @@
+{
+    "info": {
+        "_postman_id": "3d7b0d0d-1ef2-4c32-8dce-cfef1a7b5c28",
+        "name": "FiapDonate - Local",
+        "description": "Fluxo completo de autenticação, campanha, doação e verificação do RabbitMQ para o ambiente local.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Users Register",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"usuario@fiapdonate.com\",\n  \"password\": \"Senha@123\",\n  \"fullName\": \"Usuário Teste\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrlUsers}}/api/users/register",
+                    "host": [
+                        "{{baseUrlUsers}}"
+                    ],
+                    "path": [
+                        "api",
+                        "users",
+                        "register"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Users Login",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const body = pm.response.json();",
+                            "if (body && body.token) {",
+                            "  pm.environment.set('token', body.token);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"usuario@fiapdonate.com\",\n  \"password\": \"Senha@123\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrlUsers}}/api/users/login",
+                    "host": [
+                        "{{baseUrlUsers}}"
+                    ],
+                    "path": [
+                        "api",
+                        "users",
+                        "login"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Campaign Create",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const body = pm.response.json();",
+                            "if (body && (body.id || body.campaignId || body.Id)) {",
+                            "  pm.environment.set('campaignId', body.id || body.campaignId || body.Id);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Campanha de Teste\",\n  \"description\": \"Validação de fluxo end-to-end\",\n  \"goal\": 1000.00,\n  \"initialValue\": 0.00\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrlCampaign}}/api/campaigns",
+                    "host": [
+                        "{{baseUrlCampaign}}"
+                    ],
+                    "path": [
+                        "api",
+                        "campaigns"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Donation Create",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": 150.00,\n  \"donorName\": \"Doador Postman\",\n  \"donorEmail\": \"doador@postman.local\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrlReceiver}}/api/doacoes",
+                    "host": [
+                        "{{baseUrlReceiver}}"
+                    ],
+                    "path": [
+                        "api",
+                        "doacoes"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Campaign Get",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrlCampaign}}/api/campaigns/{{campaignId}}",
+                    "host": [
+                        "{{baseUrlCampaign}}"
+                    ],
+                    "path": [
+                        "api",
+                        "campaigns",
+                        "{{campaignId}}"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "RabbitMQ Queues",
+            "request": {
+                "auth": {
+                    "type": "basic",
+                    "basic": [
+                        {
+                            "key": "username",
+                            "value": "{{rabbitUser}}",
+                            "type": "string"
+                        },
+                        {
+                            "key": "password",
+                            "value": "{{rabbitPass}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:15672/api/queues/%2F/doacao-recebida-queue",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "15672",
+                    "path": [
+                        "api",
+                        "queues",
+                        "%2F",
+                        "doacao-recebida-queue"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrlUsers",
+            "value": "http://localhost:8080"
+        },
+        {
+            "key": "baseUrlCampaign",
+            "value": "http://localhost:8081"
+        },
+        {
+            "key": "baseUrlReceiver",
+            "value": "http://localhost:8082"
+        },
+        {
+            "key": "token",
+            "value": ""
+        },
+        {
+            "key": "campaignId",
+            "value": ""
+        },
+        {
+            "key": "rabbitUser",
+            "value": "fiapdonate"
+        },
+        {
+            "key": "rabbitPass",
+            "value": "sua-senha"
+        }
+    ]
+}
