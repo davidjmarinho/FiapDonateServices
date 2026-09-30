@@ -20,11 +20,12 @@ jobs:
       JWT_KEY: ${{ secrets.JWT_KEY }}
       RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
       RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+      RABBITMQ_ERLANG_COOKIE: ${{ secrets.RABBITMQ_ERLANG_COOKIE || 'fiapdonate-local-cookie' }}
       GRAFANA_ADMIN_USER: ${{ secrets.GRAFANA_ADMIN_USER }}
       GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
       SQLSERVER_CONNECTION_STRING: ${{ secrets.SQLSERVER_CONNECTION_STRING }}
       POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
-      CAMPAIGN_JWT_KEY: ${{ secrets.CAMPAIGN_JWT_KEY }}
+      CAMPAIGN_JWT_KEY: ${{ secrets.CAMPAIGN_JWT_KEY || secrets.JWT_KEY }}
 
     steps:
       - name: Checkout FiapDonateServices
@@ -129,23 +130,26 @@ jobs:
           : "${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD secret is required}"
           : "${SQLSERVER_CONNECTION_STRING:?SQLSERVER_CONNECTION_STRING secret is required}"
           : "${POSTGRES_CONNECTION_STRING:?POSTGRES_CONNECTION_STRING secret is required}"
-          : "${CAMPAIGN_JWT_KEY:?CAMPAIGN_JWT_KEY secret is required}"
+          CAMPAIGN_JWT_KEY="${CAMPAIGN_JWT_KEY:-$JWT_KEY}"
 
           kubectl create secret generic fiapdonate-secrets -n "$NAMESPACE" \
             --from-literal=JWT_KEY="$JWT_KEY" \
             --from-literal=RabbitMQ__Password="$RABBITMQ_PASSWORD" \
             --from-literal=RabbitMQ__User="$RABBITMQ_USER" \
+            --from-literal=RABBITMQ_ERLANG_COOKIE="${RABBITMQ_ERLANG_COOKIE:-fiapdonate-local-cookie}" \
             --from-literal=GRAFANA_ADMIN_USER="$GRAFANA_ADMIN_USER" \
             --from-literal=GRAFANA_ADMIN_PASSWORD="$GRAFANA_ADMIN_PASSWORD" \
             --dry-run=client -o yaml | kubectl apply -f -
 
           kubectl create secret generic fiapdonate-users-secrets -n "$NAMESPACE" \
             --from-literal=ConnectionStrings__DefaultConnection="$SQLSERVER_CONNECTION_STRING" \
+            --from-literal=Jwt__Key="$JWT_KEY" \
             --dry-run=client -o yaml | kubectl apply -f -
 
           kubectl create secret generic fiapdonatecampaign-secrets -n "$NAMESPACE" \
             --from-literal=ConnectionStrings__DefaultConnection="$SQLSERVER_CONNECTION_STRING" \
-            --from-literal=Jwt__Key="$CAMPAIGN_JWT_KEY" \
+            --from-literal=Jwt__Key="$JWT_KEY" \
+            --from-literal=RabbitMq__Password="$RABBITMQ_PASSWORD" \
             --dry-run=client -o yaml | kubectl apply -f -
 
           kubectl create secret generic fiapdonate-worker-secrets -n "$NAMESPACE" \
@@ -195,11 +199,16 @@ jobs:
           curl -fsS -u guest:guest http://127.0.0.1:15672/api/health/checks/alarms
 
       - name: Publish Docker image for main branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.GHCR_TOKEN != ''
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         run: |
+          if [ -z "${GHCR_TOKEN:-}" ] || [ -z "${GHCR_USERNAME:-}" ]; then
+            echo "GHCR credentials not configured; skipping image publish."
+            exit 0
+          fi
+
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
           docker tag fiapdonateservices:latest ghcr.io/${{ github.repository_owner }}/fiapdonateservices:latest
           docker push ghcr.io/${{ github.repository_owner }}/fiapdonateservices:latest

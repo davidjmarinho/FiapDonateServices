@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FiapDonate - Diagrama da Solução</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-soft: #0d1a2d;
+            --panel: rgba(13, 26, 45, 0.82);
+            --panel-border: rgba(148, 163, 184, 0.22);
+            --text: #e5eefb;
+            --muted: #9fb2cc;
+            --accent: #4dd0e1;
+            --accent-2: #7cdb7a;
+            --accent-3: #f7b955;
+            --accent-4: #ff7b72;
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background:
+                radial-gradient(circle at top left, rgba(77, 208, 225, 0.18), transparent 24%),
+                radial-gradient(circle at top right, rgba(124, 219, 122, 0.14), transparent 22%),
+                linear-gradient(180deg, #07111f 0%, #091627 100%);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .page {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .intro {
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intro::after {
+            content: "";
+            position: absolute;
+            inset: auto -80px -90px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(77, 208, 225, 0.22), transparent 70%);
+            pointer-events: none;
+        }
+
+        .kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #bfeef3;
+            background: rgba(77, 208, 225, 0.12);
+            border: 1px solid rgba(77, 208, 225, 0.26);
+        }
+
+        h1 {
+            margin: 16px 0 12px;
+            font-size: clamp(30px, 4vw, 52px);
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .subtitle {
+            margin: 0;
+            max-width: 920px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .meta {
+            padding: 22px;
+            display: grid;
+            gap: 14px;
+            align-content: center;
+        }
+
+        .meta-item {
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .meta-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.11em;
+            margin-bottom: 4px;
+        }
+
+        .meta-item strong {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .diagram {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .diagram-card {
+            padding: 22px;
+            overflow: hidden;
+        }
+
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .diagram-header h2 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: -0.03em;
+        }
+
+        .diagram-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: var(--text);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot.client {
+            background: var(--accent);
+        }
+
+        .dot.api {
+            background: var(--accent-2);
+        }
+
+        .dot.broker {
+            background: var(--accent-3);
+        }
+
+        .dot.data {
+            background: var(--accent-4);
+        }
+
+        .dot.obs {
+            background: #9b8cff;
+        }
+
+        .dot.platform {
+            background: #5eb1ff;
+        }
+
+        .svg-wrap {
+            width: 100%;
+            overflow-x: auto;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        svg {
+            width: 100%;
+            min-width: 1320px;
+            height: auto;
+            display: block;
+        }
+
+        .node {
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22));
+        }
+
+        .label-title {
+            font-size: 16px;
+            font-weight: 700;
+            fill: #f6fbff;
+        }
+
+        .label-subtitle {
+            font-size: 11px;
+            fill: #b8c7d9;
+        }
+
+        .lane-title {
+            font-size: 12px;
+            fill: #9fb2cc;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .lane-box {
+            fill: rgba(255, 255, 255, 0.02);
+            stroke: rgba(255, 255, 255, 0.08);
+            stroke-width: 1;
+            rx: 18;
+        }
+
+        .app-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(77, 208, 225, 0.42);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .api-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(124, 219, 122, 0.48);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .broker-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(247, 185, 85, 0.52);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .data-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(255, 123, 114, 0.52);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .obs-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(155, 140, 255, 0.52);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .platform-box {
+            fill: rgba(13, 26, 45, 0.95);
+            stroke: rgba(94, 177, 255, 0.5);
+            stroke-width: 1.4;
+            rx: 16;
+        }
+
+        .arrow {
+            stroke: #8fdcf0;
+            stroke-width: 3;
+            fill: none;
+            marker-end: url(#arrowhead);
+            opacity: 0.92;
+        }
+
+        .arrow-dashed {
+            stroke: #f7b955;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 8 8;
+            marker-end: url(#arrowhead-orange);
+            opacity: 0.9;
+        }
+
+        .arrow-soft {
+            stroke: #a7b9d4;
+            stroke-width: 2.4;
+            fill: none;
+            stroke-dasharray: 6 7;
+            marker-end: url(#arrowhead-soft);
+            opacity: 0.85;
+        }
+
+        .footnotes {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .note {
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .note strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .note p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1100px) {
+
+            .hero,
+            .footnotes {
+                grid-template-columns: 1fr;
+            }
+
+            .page {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="card intro">
+                <div class="kicker">FiapDonate • Arquitetura</div>
+                <h1>Diagrama da solução</h1>
+                <p class="subtitle">
+                    Visão de ponta a ponta do fluxo da plataforma: autenticação via Users, criação de campanha, envio de
+                    doação ao Receiver,
+                    mensageria com RabbitMQ, processamento assíncrono no Worker, persistência em SQL Server e banco
+                    auxiliar do Receiver em PostgreSQL.
+                    A mesma base também cobre observabilidade com Prometheus e Grafana, além do ambiente em Kubernetes.
+                </p>
+            </div>
+            <aside class="card meta">
+                <div class="meta-item">
+                    <span>Fluxo principal</span>
+                    <strong>Postman / Swagger → APIs → RabbitMQ → Worker → Banco</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Infraestrutura</span>
+                    <strong>Kubernetes, SQL Server, PostgreSQL e RabbitMQ</strong>
+                </div>
+                <div class="meta-item">
+                    <span>Observabilidade</span>
+                    <strong>Prometheus + Grafana</strong>
+                </div>
+            </aside>
+        </section>
+
+        <section class="card diagram-card">
+            <div class="diagram-header">
+                <div>
+                    <h2>Fluxo da aplicação</h2>
+                    <p>As setas mostram o caminho da requisição e o processamento assíncrono da doação.</p>
+                </div>
+            </div>
+
+            <div class="svg-wrap">
+                <svg viewBox="0 0 1600 920" role="img" aria-label="Diagrama da solução FiapDonate">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                            <path d="M 0 0 L 12 6 L 0 12 z" fill="#8fdcf0"></path>
+                        </marker>
+                        <marker id="arrowhead-orange" markerWidth="12" markerHeight="12" refX="10" refY="6"
+                            orient="auto">
+                            <path d="M 0 0 L 12 6 L 0 12 z" fill="#f7b955"></path>
+                        </marker>
+                        <marker id="arrowhead-soft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                            <path d="M 0 0 L 12 6 L 0 12 z" fill="#a7b9d4"></path>
+                        </marker>
+                    </defs>
+
+                    <!-- Lanes -->
+                    <rect class="lane-box" x="24" y="24" width="1552" height="120" />
+                    <text class="lane-title" x="52" y="54">Canal de acesso</text>
+                    <rect class="lane-box" x="24" y="160" width="1552" height="260" />
+                    <text class="lane-title" x="52" y="190">APIs e evento</text>
+                    <rect class="lane-box" x="24" y="436" width="1552" height="180" />
+                    <text class="lane-title" x="52" y="466">Mensageria e processamento</text>
+                    <rect class="lane-box" x="24" y="632" width="1552" height="240" />
+                    <text class="lane-title" x="52" y="662">Dados, observabilidade e plataforma</text>
+
+                    <!-- Top row: clients -->
+                    <g class="node">
+                        <rect class="app-box" x="84" y="72" width="220" height="72" rx="16"></rect>
+                        <text class="label-title" x="194" y="104" text-anchor="middle">Postman / Swagger</text>
+                        <text class="label-subtitle" x="194" y="126" text-anchor="middle">Login, campanha e
+                            doação</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="platform-box" x="360" y="72" width="220" height="72" rx="16"></rect>
+                        <text class="label-title" x="470" y="104" text-anchor="middle">Kubernetes</text>
+                        <text class="label-subtitle" x="470" y="126" text-anchor="middle">Deploy local / cluster</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="obs-box" x="636" y="72" width="220" height="72" rx="16"></rect>
+                        <text class="label-title" x="746" y="104" text-anchor="middle">Prometheus</text>
+                        <text class="label-subtitle" x="746" y="126" text-anchor="middle">Métricas e scraping</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="obs-box" x="912" y="72" width="220" height="72" rx="16"></rect>
+                        <text class="label-title" x="1022" y="104" text-anchor="middle">Grafana</text>
+                        <text class="label-subtitle" x="1022" y="126" text-anchor="middle">Dashboards e
+                            visibilidade</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="platform-box" x="1188" y="72" width="300" height="72" rx="16"></rect>
+                        <text class="label-title" x="1338" y="104" text-anchor="middle">CI / Docker / GitHub
+                            Actions</text>
+                        <text class="label-subtitle" x="1338" y="126" text-anchor="middle">Build, imagem e
+                            publicação</text>
+                    </g>
+
+                    <!-- API row -->
+                    <g class="node">
+                        <rect class="api-box" x="110" y="242" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="220" y="276" text-anchor="middle">Users API</text>
+                        <text class="label-subtitle" x="220" y="298" text-anchor="middle">Auth + JWT</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="api-box" x="390" y="242" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="500" y="276" text-anchor="middle">Campaign API</text>
+                        <text class="label-subtitle" x="500" y="298" text-anchor="middle">Campanhas e publicação</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="api-box" x="670" y="242" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="780" y="276" text-anchor="middle">Receiver API</text>
+                        <text class="label-subtitle" x="780" y="298" text-anchor="middle">Recebe doações</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="api-box" x="950" y="242" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="1060" y="276" text-anchor="middle">Worker</text>
+                        <text class="label-subtitle" x="1060" y="298" text-anchor="middle">Processa evento</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="broker-box" x="1230" y="232" width="240" height="112" rx="16"></rect>
+                        <text class="label-title" x="1350" y="268" text-anchor="middle">RabbitMQ</text>
+                        <text class="label-subtitle" x="1350" y="290" text-anchor="middle">Fila
+                            doacao-recebida-queue</text>
+                        <text class="label-subtitle" x="1350" y="310" text-anchor="middle">Mensageria assíncrona</text>
+                    </g>
+
+                    <!-- Data row -->
+                    <g class="node">
+                        <rect class="data-box" x="88" y="704" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="198" y="738" text-anchor="middle">SQL Server</text>
+                        <text class="label-subtitle" x="198" y="760" text-anchor="middle">FiapDonateDb</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="data-box" x="372" y="704" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="482" y="738" text-anchor="middle">Tables / Views</text>
+                        <text class="label-subtitle" x="482" y="760" text-anchor="middle">Campaigns / Campanhas /
+                            Doacoes</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="data-box" x="656" y="704" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="766" y="738" text-anchor="middle">PostgreSQL</text>
+                        <text class="label-subtitle" x="766" y="760" text-anchor="middle">Banco do Receiver</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="obs-box" x="940" y="704" width="220" height="92" rx="16"></rect>
+                        <text class="label-title" x="1050" y="738" text-anchor="middle">Logs / Métricas</text>
+                        <text class="label-subtitle" x="1050" y="760" text-anchor="middle">Worker, APIs e
+                            dashboards</text>
+                    </g>
+
+                    <g class="node">
+                        <rect class="platform-box" x="1224" y="704" width="256" height="92" rx="16"></rect>
+                        <text class="label-title" x="1352" y="738" text-anchor="middle">K8s Services</text>
+                        <text class="label-subtitle" x="1352" y="760" text-anchor="middle">Users, Campaign, Receiver,
+                            Worker</text>
+                    </g>
+
+                    <!-- Arrows -->
+                    <path class="arrow" d="M 304 108 C 340 108, 336 268, 390 268"></path>
+                    <path class="arrow" d="M 610 268 C 650 268, 636 268, 670 268"></path>
+                    <path class="arrow" d="M 890 268 C 926 268, 930 268, 950 268"></path>
+                    <path class="arrow-dashed" d="M 1170 278 C 1200 278, 1200 278, 1230 278"></path>
+                    <path class="arrow" d="M 770 334 C 770 420, 980 432, 1060 432 C 1140 432, 1220 408, 1280 356">
+                    </path>
+                    <path class="arrow" d="M 1230 314 C 1200 380, 1160 420, 1100 478 C 1010 564, 860 628, 766 704">
+                    </path>
+                    <path class="arrow-soft" d="M 220 334 C 220 500, 220 618, 198 704"></path>
+                    <path class="arrow-soft" d="M 500 334 C 500 500, 482 618, 482 704"></path>
+                    <path class="arrow-soft" d="M 1060 334 C 1060 500, 1050 618, 1050 704"></path>
+                    <path class="arrow-soft" d="M 1350 344 C 1350 512, 1352 612, 1352 704"></path>
+
+                    <!-- Small explanatory labels -->
+                    <text class="label-subtitle" x="332" y="224">JWT e autenticação</text>
+                    <text class="label-subtitle" x="570" y="224">Criação de campanha</text>
+                    <text class="label-subtitle" x="850" y="224">Envio de doação</text>
+                    <text class="label-subtitle" x="1130" y="224">Consumo assíncrono</text>
+                    <text class="label-subtitle" x="1380" y="210" text-anchor="end">Eventos e fila</text>
+                </svg>
+            </div>
+
+            <div class="legend">
+                <span class="chip"><span class="dot client"></span> Cliente / Postman</span>
+                <span class="chip"><span class="dot api"></span> APIs do domínio</span>
+                <span class="chip"><span class="dot broker"></span> RabbitMQ / fila</span>
+                <span class="chip"><span class="dot data"></span> Bancos de dados</span>
+                <span class="chip"><span class="dot obs"></span> Observabilidade</span>
+                <span class="chip"><span class="dot platform"></span> Kubernetes / CI</span>
+            </div>
+        </section>
+
+        <section class="footnotes">
+            <div class="note">
+                <strong>Fluxo principal</strong>
+                <p>O usuário autentica, cria a campanha, envia a doação e o Worker atualiza o valor arrecadado de forma
+                    assíncrona após a mensagem sair do RabbitMQ.</p>
+            </div>
+            <div class="note">
+                <strong>Base de dados</strong>
+                <p>As APIs usam SQL Server em <em>FiapDonateDb</em>. O Receiver usa PostgreSQL para o banco auxiliar do
+                    fluxo de doações.</p>
+            </div>
+            <div class="note">
+                <strong>Exposição no vídeo</strong>
+                <p>Use essa página para apresentar a visão geral antes de demonstrar o deploy, os testes no Postman e o
+                    monitoramento em Grafana.</p>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
