@@ -1,0 +1,23 @@
+meta {
+  name: Users Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrlUsers}}/api/users/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "usuario@fiapdonate.com",
+    "password": "Senha@123",
+    "fullName": "Usuário Teste"
+  }
+}

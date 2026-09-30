@@ -1,0 +1,28 @@
+meta {
+  name: Donation Create
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrlReceiver}}/api/doacoes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "campaignId": "{{campaignId}}",
+    "amount": 150.00,
+    "donorName": "Doador Bruno",
+    "donorEmail": "doador@bruno.local"
+  }
+}

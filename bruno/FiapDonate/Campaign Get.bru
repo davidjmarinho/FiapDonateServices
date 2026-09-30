@@ -1,0 +1,18 @@
+meta {
+  name: Campaign Get
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrlCampaign}}/api/campaigns/{{campaignId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+headers {
+  Accept: application/json
+}

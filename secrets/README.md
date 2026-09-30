@@ -9,6 +9,7 @@ Crie os arquivos abaixo com valores locais reais para sua máquina:
 - `sqlserver_sa_password.txt`
 - `postgres_password.txt`
 - `grafana_admin_password.txt`
+- `campaign_jwt_key.txt`
 
 Exemplo:
 
@@ -18,6 +19,7 @@ openssl rand -base64 32 > secrets/rabbitmq_password.txt
 openssl rand -base64 32 > secrets/sqlserver_sa_password.txt
 openssl rand -base64 32 > secrets/postgres_password.txt
 openssl rand -base64 32 > secrets/grafana_admin_password.txt
+openssl rand -base64 48 > secrets/campaign_jwt_key.txt
 ```
 
 Eles são usados pelo Docker Compose via `secrets`, mantendo os valores fora do arquivo YAML versionado.
