@@ -123,6 +123,7 @@ jobs:
       - name: Create Kubernetes secrets from GitHub secrets
         run: |
           set -euo pipefail
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           : "${JWT_KEY:?JWT_KEY secret is required}"
           : "${RABBITMQ_USER:?RABBITMQ_USER secret is required}"
           : "${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD secret is required}"
