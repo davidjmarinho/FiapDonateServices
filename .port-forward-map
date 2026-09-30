@@ -1,0 +1,11 @@
+fiapdonate-receiver|8080|24167
+fiapdonate-services|8080|26263
+fiapdonate-users|8080|23334
+fiapdonate-worker|8080|28955
+fiapdonatecampaign|8080|28396
+grafana|3000|3000
+postgres|5432|28993
+prometheus|9090|9090
+rabbitmq|5672|5672
+rabbitmq|15672|15672
+sqlserver|1433|1433

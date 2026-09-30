@@ -8,6 +8,9 @@ data:
   ASPNETCORE_URLS: http://+:8080
   Jwt__Issuer: FiapDonateCampaign
   Jwt__Audience: FiapDonateCampaignUsers
+  RabbitMq__Host: rabbitmq
+  RabbitMq__VirtualHost: /
+  RabbitMq__Username: fiapdonate
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -26,8 +29,8 @@ spec:
     spec:
       containers:
         - name: campaign
-          image: fiapdonatecampaign:local
-          imagePullPolicy: IfNotPresent
+          image: davidjmarinho/fiapdonatecampaign:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:

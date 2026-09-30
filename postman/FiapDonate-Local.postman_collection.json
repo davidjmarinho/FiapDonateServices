@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "3d7b0d0d-1ef2-4c32-8dce-cfef1a7b5c28",
         "name": "FiapDonate - Local",
-        "description": "Fluxo completo de autenticação, campanha, doação e verificação do RabbitMQ para o ambiente local.",
+        "description": "Fluxo completo de autenticação, campanha, doação e verificação do RabbitMQ para o ambiente local. Usa /api/users, /api/campaign, /api/doacoes e a fila doacao-recebida-queue.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -18,7 +18,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n  \"email\": \"usuario@fiapdonate.com\",\n  \"password\": \"Senha@123\",\n  \"fullName\": \"Usuário Teste\"\n}",
+                    "raw": "{\n  \"email\": \"doador.postman@fiapdonate.com\",\n  \"senha\": \"Senha@123\",\n  \"nome\": \"Doador Postman\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -26,10 +26,11 @@
                     }
                 },
                 "url": {
-                    "raw": "{{baseUrlUsers}}/api/users/register",
+                    "raw": "{{host}}:{{usersPort}}/api/users/register",
                     "host": [
-                        "{{baseUrlUsers}}"
+                        "{{host}}"
                     ],
+                    "port": "{{usersPort}}",
                     "path": [
                         "api",
                         "users",
@@ -40,7 +41,7 @@
             "response": []
         },
         {
-            "name": "Users Login",
+            "name": "Doador Login",
             "event": [
                 {
                     "listen": "test",
@@ -48,7 +49,7 @@
                         "exec": [
                             "const body = pm.response.json();",
                             "if (body && body.token) {",
-                            "  pm.environment.set('token', body.token);",
+                            "  pm.environment.set('tokenDoador', body.token);",
                             "}"
                         ],
                         "type": "text/javascript"
@@ -65,7 +66,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n  \"email\": \"usuario@fiapdonate.com\",\n  \"password\": \"Senha@123\"\n}",
+                    "raw": "{\n  \"email\": \"doador.postman@fiapdonate.com\",\n  \"senha\": \"Senha@123\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -73,10 +74,59 @@
                     }
                 },
                 "url": {
-                    "raw": "{{baseUrlUsers}}/api/users/login",
+                    "raw": "{{host}}:{{usersPort}}/api/users/login",
                     "host": [
-                        "{{baseUrlUsers}}"
+                        "{{host}}"
                     ],
+                    "port": "{{usersPort}}",
+                    "path": [
+                        "api",
+                        "users",
+                        "login"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Gestor Login",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "const body = pm.response.json();",
+                            "if (body && body.token) {",
+                            "  pm.environment.set('tokenGestor', body.token);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"gestor@fiapdonate.com\",\n  \"senha\": \"Gestor@123\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{host}}:{{usersPort}}/api/users/login",
+                    "host": [
+                        "{{host}}"
+                    ],
+                    "port": "{{usersPort}}",
                     "path": [
                         "api",
                         "users",
@@ -108,7 +158,7 @@
                     "bearer": [
                         {
                             "key": "token",
-                            "value": "{{token}}",
+                            "value": "{{tokenGestor}}",
                             "type": "string"
                         }
                     ]
@@ -122,7 +172,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n  \"name\": \"Campanha de Teste\",\n  \"description\": \"Validação de fluxo end-to-end\",\n  \"goal\": 1000.00,\n  \"initialValue\": 0.00\n}",
+                    "raw": "{\n  \"titulo\": \"Campanha de Teste\",\n  \"descricao\": \"Validação de fluxo end-to-end\",\n  \"dataInicio\": \"2026-09-30T02:33:10\",\n  \"dataFim\": \"2026-10-30T02:33:10\",\n  \"metaFinanceira\": 1000.00\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -130,13 +180,14 @@
                     }
                 },
                 "url": {
-                    "raw": "{{baseUrlCampaign}}/api/campaigns",
+                    "raw": "{{host}}:{{campaignPort}}/api/campaign",
                     "host": [
-                        "{{baseUrlCampaign}}"
+                        "{{host}}"
                     ],
+                    "port": "{{campaignPort}}",
                     "path": [
                         "api",
-                        "campaigns"
+                        "campaign"
                     ]
                 }
             },
@@ -150,7 +201,7 @@
                     "bearer": [
                         {
                             "key": "token",
-                            "value": "{{token}}",
+                            "value": "{{tokenDoador}}",
                             "type": "string"
                         }
                     ]
@@ -164,7 +215,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n  \"campaignId\": \"{{campaignId}}\",\n  \"amount\": 150.00,\n  \"donorName\": \"Doador Postman\",\n  \"donorEmail\": \"doador@postman.local\"\n}",
+                    "raw": "{\n  \"idCampanha\": \"{{campaignId}}\",\n  \"valorDoacao\": 150.00\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -172,10 +223,11 @@
                     }
                 },
                 "url": {
-                    "raw": "{{baseUrlReceiver}}/api/doacoes",
+                    "raw": "{{host}}:{{campaignPort}}/api/doacoes",
                     "host": [
-                        "{{baseUrlReceiver}}"
+                        "{{host}}"
                     ],
+                    "port": "{{campaignPort}}",
                     "path": [
                         "api",
                         "doacoes"
@@ -192,7 +244,7 @@
                     "bearer": [
                         {
                             "key": "token",
-                            "value": "{{token}}",
+                            "value": "{{tokenDoador}}",
                             "type": "string"
                         }
                     ]
@@ -205,13 +257,14 @@
                     }
                 ],
                 "url": {
-                    "raw": "{{baseUrlCampaign}}/api/campaigns/{{campaignId}}",
+                    "raw": "{{host}}:{{campaignPort}}/api/campaign/{{campaignId}}",
                     "host": [
-                        "{{baseUrlCampaign}}"
+                        "{{host}}"
                     ],
+                    "port": "{{campaignPort}}",
                     "path": [
                         "api",
-                        "campaigns",
+                        "campaign",
                         "{{campaignId}}"
                     ]
                 }
@@ -244,12 +297,11 @@
                     }
                 ],
                 "url": {
-                    "raw": "http://localhost:15672/api/queues/%2F/doacao-recebida-queue",
-                    "protocol": "http",
+                    "raw": "{{host}}:{{rabbitPort}}/api/queues/%2F/doacao-recebida-queue",
                     "host": [
-                        "localhost"
+                        "{{host}}"
                     ],
-                    "port": "15672",
+                    "port": "{{rabbitPort}}",
                     "path": [
                         "api",
                         "queues",
@@ -263,19 +315,43 @@
     ],
     "variable": [
         {
-            "key": "baseUrlUsers",
-            "value": "http://localhost:8080"
+            "key": "host",
+            "value": "http://localhost"
         },
         {
-            "key": "baseUrlCampaign",
-            "value": "http://localhost:8081"
+            "key": "usersPort",
+            "value": "8080"
         },
         {
-            "key": "baseUrlReceiver",
-            "value": "http://localhost:8082"
+            "key": "campaignPort",
+            "value": "8081"
         },
         {
-            "key": "token",
+            "key": "rabbitPort",
+            "value": "15672"
+        },
+        {
+            "key": "doadorEmail",
+            "value": "doador.postman@fiapdonate.com"
+        },
+        {
+            "key": "doadorSenha",
+            "value": "Senha@123"
+        },
+        {
+            "key": "gestorEmail",
+            "value": "gestor@fiapdonate.com"
+        },
+        {
+            "key": "gestorSenha",
+            "value": "Gestor@123"
+        },
+        {
+            "key": "tokenDoador",
+            "value": ""
+        },
+        {
+            "key": "tokenGestor",
             "value": ""
         },
         {

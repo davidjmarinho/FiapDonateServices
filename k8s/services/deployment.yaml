@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: fiapdonate-services
-          image: fiapdonateservices:latest
-          imagePullPolicy: IfNotPresent
+          image: davidjmarinho/fiapdonateservices:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:
