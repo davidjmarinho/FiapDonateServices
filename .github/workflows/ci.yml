@@ -65,13 +65,13 @@ jobs:
       - name: Build Docker images for the cluster
         run: |
           set -euo pipefail
-          docker build -t fiapdonateservices:latest .
+          docker build -t fiapdonateservices:latest -t davidjmarinho/fiapdonateservices:latest .
 
           for pair in \
-            "FiapDonateCampaign|fiapdonatecampaign:local" \
-            "FiapDonateWorker|fiapdonateworker:local" \
-            "FiapDonateReceiver|fiapdonatereceiver:local" \
-            "FiapDonateUsers|fiapdonateusers:local"; do
+            "FiapDonateCampaign|davidjmarinho/fiapdonatecampaign:latest" \
+            "FiapDonateWorker|davidjmarinho/fiapdonateworker:latest" \
+            "FiapDonateReceiver|davidjmarinho/fiapdonatereceiver:latest" \
+            "FiapDonateUsers|davidjmarinho/fiapdonateusers:latest"; do
             repo="${pair%%|*}"
             tag="${pair##*|}"
             dir="../${repo}"
@@ -111,8 +111,8 @@ jobs:
       - name: Load built images into kind
         run: |
           set -euo pipefail
-          kind load docker-image fiapdonateservices:latest --name "$CLUSTER_NAME"
-          for image in fiapdonatecampaign:local fiapdonateworker:local fiapdonatereceiver:local fiapdonateusers:local; do
+          kind load docker-image davidjmarinho/fiapdonateservices:latest --name "$CLUSTER_NAME"
+          for image in davidjmarinho/fiapdonatecampaign:latest davidjmarinho/fiapdonateworker:latest davidjmarinho/fiapdonatereceiver:latest davidjmarinho/fiapdonateusers:latest; do
             if docker image inspect "$image" >/dev/null 2>&1; then
               kind load docker-image "$image" --name "$CLUSTER_NAME"
             else
@@ -166,6 +166,7 @@ jobs:
       - name: Deploy Kubernetes manifests
         run: |
           set -euo pipefail
+          find k8s -name deployment.yaml -exec sed -i 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' {} +
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -R -f k8s/
           kubectl get ns "$NAMESPACE"
